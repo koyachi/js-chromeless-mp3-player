@@ -1,0 +1,187 @@
+<html>
+<head>
+  <title>Chromeless MP3 Player</title>
+  <style>
+div#info {
+  width: 300px;
+  background: #808080;
+}
+div#info div#loading{
+  width: 0%
+  background: #FF0080;
+}
+div#info div#playing{
+  width: 0%
+  background: #FF8080;
+  xbackground-image: url(favicon.png);
+  xbackground-repeat: repeat-x;
+}
+  </style>
+<script type="text/javascript" src="swfobject.js"></script>
+  <script language="Javascript">
+var GLOBAL = this;
+GLOBAL.buff = "DBG";
+
+function log(msg) {
+//  if(console && console.log) console.log(msg);
+//  GLOBAL.buff = GLOBAL.buff + "##" + msg;
+}
+
+var mp3;
+var currentState;
+function onChromelessMP3PlayerReady() {
+  log('onChromelessMP3PlayerReady');
+  mp3 = document.getElementById('mp3player');
+  mp3.addEventListener('onStateChange', 'onMP3StateChange');
+  setInterval(updateInfo, 2000);
+}
+function onMP3StateChange(state) {
+  currentState = state;
+  log('JS.onMP3StateChange(' + state + ')');
+}
+
+function load(url) {
+  if (mp3) {
+    mp3.load(url);
+  }
+}
+function play() {
+  if (mp3) {
+    mp3.play();
+  }
+}
+function pause() {
+  if (mp3) {
+    mp3.pause();
+  }
+}
+function stop() {
+  if (mp3) {
+    mp3.stop();
+  }
+}
+function seekTo(milliSeconds) {
+  if (mp3) {
+    mp3.seekTo(milliSeconds);
+  }
+}
+function getBytesLoaded() {
+  if (mp3) {
+    return mp3.getBytesLoaded();
+  }
+}
+function getBytesTotal() {
+  if (mp3) {
+    return mp3.getBytesTotal();
+  }
+}
+function getCurrentTime() {
+  if (mp3) {
+    return mp3.getCurrentTime();
+  }
+}
+function getDuration() {
+  if (mp3) {
+    return mp3.getDuration();
+  }
+}
+function getVolume() {
+  if (mp3) {
+    return mp3.getVolume();
+  }
+}
+function setVolume(volume) {
+  if (mp3) {
+    mp3.setVolume(volume);
+  }
+}
+
+
+function updateInfo() {
+  log('updateInfo');
+  var currentTime = parseInt(getCurrentTime() / 1000);
+  var hour = parseInt(currentTime / 3600);
+  var min = parseInt(currentTime / 60);
+  var sec = currentTime % 60;
+  hour = (hour < 10) ? '0' + hour : hour;
+  min = (min < 10) ? '0' + min : min;
+  sec = (sec < 10) ? '0' + sec : sec;
+  var str = [
+    'State:', currentState,
+    'BytesTotal:', getBytesTotal(),
+    'BytesLoaded:', getBytesLoaded(),
+    'Duration:', Math.round(getDuration() / 1000),
+    'CurrentTime:', Math.round(getCurrentTime() / 1000),
+    'NOW:', hour + ':' + min + ':' + sec
+  ].join('  ');
+  document.getElementById('status').innerHTML = str;
+  log(str);
+
+  var loadedRate = getBytesLoaded() / getBytesTotal();
+  var playRate = getCurrentTime() / getDuration();
+  if (getBytesLoaded()) {
+    var elmLoading = document.getElementById('loading');
+    elmLoading.style.backgroundColor = "#FF0080";
+    elmLoading.style.width = loadedRate * 300 + "px";
+  }
+  if (getCurrentTime()) {
+    var elmPlaying = document.getElementById('playing');
+    elmPlaying.style.backgroundColor = "#FF8080";
+    elmPlaying.style.width = (playRate/loadedRate) * 300 + "px";
+  }
+
+  var volume = getVolume();
+  document.getElementById('volume').innerHTML = volume;
+}
+</script>
+</head>
+<body>
+<div>
+  Chromless MP3 Player
+</div>
+<div>
+  <a href="javascript:void(0);" onclick="load('http://mp3.juno.co.uk/MP3/SF1297185-02-01-02.mp3');">load</a> | <a href="javascript:void(0);" onclick="play();">play</a> | <a href="javascript:void(0);" onclick="stop();">stop</a>
+</div>
+<form action="" onsubmit="seekTo(document.getElementById('seekto').value * 1000); return false;">
+  <div>
+    <input id="seekto" type="text" size="4" />
+    <input type="submit" value="Seek to" />
+  </div>
+</form>
+<div id="status">foo</div>
+<dic id="track_info" class="info">
+  <div id="loading">__</div>
+  <div id="playing">__</div>
+</div>
+  <div>
+    <input type="text" size="30" id="loadmp3url" value="http://mp3.juno.co.uk/MP3/SF1297185-02-01-02.mp3" />
+    <a href="javascript:void(0)" onclick="load(document.getElementById('loadmp3url').value)">&lt;- Load MP3</a>
+  </div>
+
+  <div>
+    <input id="vol" type="text" size="2" /> 
+    <a href="javascript:void(0)" onclick="setVolume(document.getElementById('vol').value)" />&lt;- Set Volume</a>  | Volume: <span id="volume">--</span>
+  </div>
+
+
+<div id="mp3player">mp3player</div>
+<script type="text/javascript">
+  var id = "mp3player";
+  var width = 1;
+  var height = 1;
+  var flashvars = {};
+  var params = {id: id};
+  var attributes = params;
+  swfobject.embedSWF("MP3Player.swf?ver=2",
+                     id,
+                     width.toString(),
+                     height.toString(),
+                     "9.0.0",
+                     "expressInstall.swf",
+                     flashvars,
+                     params,
+                     attributes);
+  log('emveded');
+</script>
+</body>
+</html>
